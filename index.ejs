@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Thrones Polls</title>
+  </head>
+  <body>
+    <h3>Thrones Polls</h3>
+    <div id="main"></div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <script type="text/javascript">
+      $.ajax({
+        method: 'GET',
+        url: "/polls",
+      })
+        .done(function (data) {
+          if (!data.polls.length) {
+            $('#main').html('There are no polls');
+          } else {
+            data.polls.forEach(function (poll) {
+              $('#main').append('<a href="#" onclick="showPoll(' + poll.id + ')"><h2>' + poll.id + '</h2></a>');
+            });
+          }
+        })
+        .fail(function () {
+          console.log('ERROR');
+        });
+
+      function showPoll (id) {
+        $.ajax({
+          method: 'GET',
+          url: '/responses/' + id
+        })
+          .done(function (data) {
+            var questions = {};
+
+            // filter each response into questions
+            data.responses.forEach(function (response) {
+              var response = JSON.parse(response.response);
+              for (var key in response) {
+                // if it's a note, save it as a note
+                if (key.slice(key.length - 4) === 'note') {
+                  var noteQuestion = key.slice(0, key.length - 4)
+                  if (!questions[noteQuestion]) {
+                    questions[noteQuestion] = { answers: [] };
+                    questions[noteQuestion].notes = [response[key] + ' - ' + response.oocName];
+                  } else {
+                    questions[noteQuestion].notes.push(response[key] + ' - ' + response.oocName);
+                  }
+                // if it's an answer, save it as an answer
+                } else {
+                  if (!questions[key]) {
+                    questions[key] = { choices: {}, answers: [response[key]], notes: [] };
+                    questions[key].choices[response[key]] = 0;
+                  } else {
+                    questions[key].answers.push(response[key]);
+                    questions[key].choices[response[key]] = 0;
+                  }
+                }
+              }
+            });
+
+            // count responses for each choice
+            for (var key in questions) {
+              questions[key].answers.forEach(function (answer) {
+                questions[key].choices[answer]++;
+              });
+            }
+
+            $('#main').html('<h1>Poll #' + id);
+
+            // add each question to page with values
+            for (var key in questions) {
+              $('#main').append('<h3>' + key + '</h3>');
+              for (var choice in questions[key].choices) {
+                $('#main').append('- <b>' + choice + ':</b> ' + questions[key].choices[choice] + ' -<br/>');
+              }
+              $('#main').append('<br /><b>Reasons:</b> ');
+              questions[key].notes.forEach(function (note) {
+                $('#main').append('<i>' + note + '<i>, ');
+              });
+              $('#main').append('<br /><br />');
+            }
+            console.log(questions);
+          })
+          .fail(function () {
+            console.log('ERROR');
+          });
+      }
+    </script>
+  </body>
+</html>

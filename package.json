@@ -1,0 +1,27 @@
+{
+  "name": "thrones-poll-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "test",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ryo-capricorn92/thronesPollServer.git"
+  },
+  "author": "Ryo Wheatley",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ryo-capricorn92/thronesPollServer/issues"
+  },
+  "homepage": "https://github.com/ryo-capricorn92/thronesPollServer#readme",
+  "dependencies": {
+    "body-parser": "^1.16.0",
+    "ejs": "^2.5.5",
+    "express": "^4.14.1",
+    "pg": "^6.1.2",
+    "sequelize": "^3.30.0"
+  }
+}

@@ -1,0 +1,86 @@
+<div id="polling_js" pollnum="001">
+	<label for="ooc_name">OOC Name: </label><input type="textbox" id="ooc_name">
+	<h3 class="question" questnum="1" qtype="mult">Should Carniskin females be allowed to have purple?</h3>
+  <input type="radio" name="question_1" value="Yes"> Yes
+	<input type="radio" name="question_1" value="No" checked> No
+	<label for="question_1_note">Reason: </label><input type="textbox" id="question_1_note" placeholder="(optional)">
+
+  <h3 class="question" questnum="2" qtype="mult">Should Carniskin females be allowed to have purple?</h3>
+	<input type="radio" name="question_2" value="Yes"> Yes
+	<input type="radio" name="question_2" value="No" checked> No
+	<label for="question_2_note">Reason: </label><input type="textbox" id="question_2_note" placeholder="(optional)">
+
+	<button id="submit_poll">Submit</button>
+
+	<div id="response"></div>
+</div>
+
+	<script type="text/javascript">
+		$(".author_avatar img").error(function () {
+			$(this).unbind("error").closest('.author_avatar').remove();
+		});
+
+		// check for expander and apply necessary styling if present
+		if ($('.exxpand').length) {
+			$('.exxpandee').hide();
+			$('.exxpand').css('cursor', 'pointer');
+			$('.exxpand').click(function () {
+				if ($(this).html() === '⊕') {
+					$(this).html('&ominus;');
+					$('#exxpandee_' + $(this).attr('id').split('').pop()).show();
+				} else {
+					$(this).html('&oplus;');
+					$('#exxpandee_' + $(this).attr('id').split('').pop()).hide();
+				}
+			});
+		}
+
+		// check for custom polling
+		if ($('#polling_js').length) {
+			$('#submit_poll').click(function () {
+
+        // define necessary objects
+				var pollObj = {};
+        var response = {};
+
+        // check if an ooc name was given
+				pollObj.oocName = $('#ooc_name').val();
+				if (!pollObj.oocName) {
+					$('#response').css('color', 'red').html('You must enter an OOC name.')
+					return;
+				}
+
+        // log the poll number
+        pollObj.pollId = $('#polling_js').attr('pollnum');
+
+        // log all the questions
+				$('.question').each(function (question) {
+          if ($(this).attr('qtype') === 'mult') {
+            var questNum = 'question_' + $(this).attr('questnum');
+            response[questNum] = $('input[name="' + questNum + '"]:checked').val();
+            response[questNum + '_note'] = $(questNum + '_note').val();
+          }
+        });
+
+        // format the poll object to be sent
+        pollObj.response = JSON.stringify(response);
+
+				$.ajax({
+					method: 'POST',
+					url: "http://3fdcbd7a.ngrok.io/newRes",
+					contentType: 'application/json',
+					data: JSON.stringify(pollObj)
+				})
+				  .done(function (data) {
+            if (data.success) {
+              $('#response').css('color', 'green').html('Your response has been submitted');
+            } else if (data.error && data.alreadySubmitted) {
+              $('#response').css('color', 'red').html('You\'ve already submitted a response. If you made a mistake, make a post in Maintenance to get your previous response deleted.');
+            }
+					})
+					.fail(function () {
+						$('#response').css('color', 'red').html('Sorry, there\'s been an error. Please let Ryo know, and try again later.');
+					})
+			});
+		}
+	</script>
